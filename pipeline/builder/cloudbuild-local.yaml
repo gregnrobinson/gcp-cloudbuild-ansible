@@ -27,7 +27,7 @@ steps:
       - 'tag'
       - '${_IMG_DEST}:${_SHORT_SHA}'
       - '${_IMG_DEST}:latest'
-    waitFor: ["build"]
+    waitFor: ["Build"]
     id: Tag
 images:
   - '${_IMG_DEST}:latest'

@@ -10,7 +10,7 @@ steps:
     args:
       - kms
       - decrypt
-      - --ciphertext-file=id_rsa.enc
+      - --ciphertext-file=ansible_rsa.enc
       - --plaintext-file=id_rsa
       - --location=${_LOCATION}
       - --keyring=${_KEY_RING}
@@ -41,7 +41,7 @@ steps:
   # RUN PLAYBOOKS
   - name: '${_BASE_IMG}'
     entrypoint: '/usr/bin/ansible-playbook'
-    id: Create Network
+    id: Deploy Infra
     args: ['-e', 'gcp_project=${_PROJECT_ID}', '-e', 'gcp_cred_kind=${_GCP_CRED_KIND}', '-i', '/opt/ansible/inventory/gcp.yaml', './playbooks/infra.yaml']
 images:
   - '${_BASE_IMG}'

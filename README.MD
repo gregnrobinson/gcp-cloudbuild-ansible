@@ -77,7 +77,7 @@ KEY_RING="ansible-keyring"
 KEY="ansible-sa-key"
 SA_ACCOUNT_ID="ansible-automation"
 SA_DESCRIPTION="Used for executing Ansible scripts against"
-SA_KEY_PATH="./config/service_account.json"
+SA_KEY_PATH="./config/credentials/service_account.json"
 
 gcloud iam service-accounts create $SA_ACCOUNT_ID \
     --description=$DESCRIPTION \
@@ -85,6 +85,10 @@ gcloud iam service-accounts create $SA_ACCOUNT_ID \
     
 gcloud iam service-accounts keys create $SA_KEY_PATH \
     --iam-account=${SA_ACCOUNT_ID}@${PROJECT_ID}.iam.gserviceaccount.com
+
+gcloud projects add-iam-policy-binding $PROJECT_ID \
+    --member serviceAccount:${SA_ACCOUNT_ID}@${PROJECT_ID}.iam.gserviceaccount.com \
+    --role roles/editor
 
 gcloud kms keys create $KEY \
     --keyring $KEY_RING \
@@ -97,6 +101,8 @@ gcloud kms encrypt \
     --location $LOCATION  \
     --plaintext-file $SA_KEY_PATH \
     --ciphertext-file $SA_KEY_PATH.enc
+
+rm -rf $SA_KEY_PATH
 ```
 
 ## Create and Encrypt SSH Private Key with KMS

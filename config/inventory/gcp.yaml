@@ -1,5 +1,5 @@
 plugin: gcp_compute
 projects:
-  - <PROJECT_ID>
+  - greg-playground-310720
 auth_kind: serviceaccount
 service_account_file: /workspace/config/credentials/service_account.json

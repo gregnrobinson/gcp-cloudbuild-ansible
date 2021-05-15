@@ -1,4 +1,4 @@
-gcp_project: "<PROJECT_ID>"
+gcp_project: "greg-playground-310720"
 gcp_cred_kind: "serviceaccount"
 gcp_region: "northamerica-northeast1"
 gcp_zone: "northamerica-northeast1-a"

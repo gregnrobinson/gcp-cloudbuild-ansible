@@ -1,18 +1,33 @@
 # Immutable Ansible Deployments
 
+# Setup
+
+Create an environment variable named PROJECT_ID
+```sh
+export PROJECT_ID="greg-playground-310720"
+```
+
+Run the `./setup.sh` script to replace the project ID in all the neccesary yaml files.
+
+```yaml
+./setup.sh
+```
+
 ## Ansible Builder Pipeline
+
 The `pipeline/builder` folder of this project contains the required files to build the Ansible builder image that will be the base container for executing `/usr/bin/ansible-playbook` on runtime.
 
-Modify the substitutions of the `pipeline/builder/cloudbuild.yaml` file to match the environment.
+The `pipeline/builder/cloudbuild.yaml` file has the following available substitutions.
 
 ```yaml
 substitutions:
     _IMG_DEST: gcr.io/<PROJECT_ID>/ansible
 ```
+
 ## Ansible Runner Pipeline
 Once the image has been created and stored in the container registry, it is sourced by the `cloudbuild.yaml` file in the `pipeline/runner` folder to execute ansible scripts against targets.
 
-Modify the substitutions of the `pipeline/runner/cloudbuild.yaml` file to match the environment.
+The `pipeline/runner/cloudbuild.yaml` file has the following available substitutions.
 
 ```yaml
 substitutions:

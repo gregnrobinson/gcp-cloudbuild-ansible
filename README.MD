@@ -4,7 +4,7 @@
 
 Create an environment variable named PROJECT_ID
 ```sh
-export PROJECT_ID="greg-playground-310720"
+export PROJECT_ID="<YOUR_PROJECT_ID>"
 ```
 
 Run the `./setup.sh` script to replace the project ID in all the neccesary yaml files.

@@ -77,13 +77,13 @@ KEY_RING="ansible-keyring"
 KEY="ansible-sa-key"
 SA_ACCOUNT_ID="ansible-automation"
 SA_DESCRIPTION="Used for executing Ansible scripts against"
-SA_KEY_PATH="./config/service-account.json"
+SA_KEY_PATH="./config/service_account.json"
 
-gcloud iam service-accounts create $SA_ACCOUNT_ID \
+gcloud iam service_accounts create $SA_ACCOUNT_ID \
     --description=$DESCRIPTION \
     --display-name=$SA_ACCOUNT_ID
     
-gcloud iam service-accounts keys create $SA_KEY_PATH \
+gcloud iam service_accounts keys create $SA_KEY_PATH \
     --iam-account=${SA_ACCOUNT_ID}@${PROJECT_ID}.iam.gserviceaccount.com
 
 gcloud kms keys create $KEY \
@@ -99,34 +99,35 @@ gcloud kms encrypt \
     --ciphertext-file $SA_KEY_PATH.enc
 ```
 
-## Create and Encrypt Private Key with KMS
+## Create and Encrypt SSH Private Key with KMS
 
 ```sh
 LOCATION="northamerica-northeast1"
 KEY_RING="ansible-keyring"
 KEY="ansible-ssh-key"
-SSH_KEY_PATH="~/.ssh/ansible_rsa"
+SSH_KEY="ansible_rsa"
+SSH_KEY_PATH="~/.ssh"
 
 gcloud kms keys create $KEY \
     --keyring $KEY_RING \
     --location $LOCATION \
     --purpose "encryption"
 
-ssh-keygen -t rsa -f $SSH_KEY_PATH -C ansible
-chmod 400 $SSH_KEY_PATH
+ssh-keygen -t rsa -f $SSH_KEY -C ansible
+chmod 400 $SSH_KEY
 
 gcloud kms encrypt \
     --key ansible-ssh-key \
     --keyring $KEY_RING \
     --location $LOCATION  \
-    --plaintext-file $SSH_KEY_PATH \
-    --ciphertext-file $SSH_KEY_PATH.enc
-```
-## Create a Public SSH Keys File
+    --plaintext-file $SSH_KEY \
+    --ciphertext-file $SSH_KEY.enc
 
-```sh
-PUBLIC_KEY=$(cat ~/.ssh/ansible_rsa.pub)
+PUBLIC_KEY=$(cat $SSH_KEY.pub)
 echo "ansible:$PUBLIC_KEY" >> ./config/credentials/public_keys
+
+mv ansible_rsa.enc ./config/credentials
+rm -rf ansible_rsa.pub ansible_rsa
 ```
 # Building Locally
 

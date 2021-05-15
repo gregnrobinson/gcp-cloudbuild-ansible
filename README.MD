@@ -4,7 +4,7 @@
 
 The `pipeline/builder` folder of this project contains the required files to build the Ansible builder image that will be the base container for executing `/usr/bin/ansible-playbook` on runtime.
 
-The `pipeline/builder/cloudbuild.yaml` file has the following available substitutions.
+The `pipeline/builder/cloudbuild.yaml` file has the following substitutions.
 
 ```yaml
 substitutions:
@@ -14,7 +14,7 @@ substitutions:
 ## Ansible Runner Pipeline
 Once the image has been created and stored in the container registry, it is sourced by the `cloudbuild.yaml` file in the `pipeline/runner` folder to execute ansible scripts against targets.
 
-The `pipeline/runner/cloudbuild.yaml` file has the following available substitutions.
+The `pipeline/runner/cloudbuild.yaml` file has the following substitutions.
 
 ```yaml
 substitutions:

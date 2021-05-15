@@ -79,11 +79,11 @@ SA_ACCOUNT_ID="ansible-automation"
 SA_DESCRIPTION="Used for executing Ansible scripts against"
 SA_KEY_PATH="./config/service_account.json"
 
-gcloud iam service_accounts create $SA_ACCOUNT_ID \
+gcloud iam service-accounts create $SA_ACCOUNT_ID \
     --description=$DESCRIPTION \
     --display-name=$SA_ACCOUNT_ID
     
-gcloud iam service_accounts keys create $SA_KEY_PATH \
+gcloud iam service-accounts keys create $SA_KEY_PATH \
     --iam-account=${SA_ACCOUNT_ID}@${PROJECT_ID}.iam.gserviceaccount.com
 
 gcloud kms keys create $KEY \

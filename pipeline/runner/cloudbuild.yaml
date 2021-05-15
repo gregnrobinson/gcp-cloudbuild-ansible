@@ -21,7 +21,7 @@ steps:
     args:
       - kms
       - decrypt
-      - --ciphertext-file=service_account.enc
+      - --ciphertext-file=service_account.json.enc
       - --plaintext-file=service_account.json
       - --location=${_LOCATION}
       - --keyring=${_KEY_RING}

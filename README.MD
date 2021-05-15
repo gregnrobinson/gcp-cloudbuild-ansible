@@ -48,7 +48,6 @@ gcloud services enable containerregistry.googleapis.com --project ${PROJECT_ID}
 gcloud services enable storage.googleapis.com --project ${PROJECT_ID}
 ```
 
-
 ## Create KMS for Ansible Control Node
 
 ```sh
@@ -135,7 +134,7 @@ Install the `cloud-build-local` package with the following command.
 gcloud components install cloud-build-local
 ```
 
-When running locally, ensure the user/service account executing the pipeline has the required permissions. Storage Admin is for pushing and pulling images from GCR, as well as creating an image if it doesn't already exist.
+Ensure the user/service account executing the pipeline has the required permissions. Storage Admin is for pushing and pulling images from GCR, as well as creating an image if it doesn't already exist.
 
   - Cloud Build Service Account
   - Storage Admin

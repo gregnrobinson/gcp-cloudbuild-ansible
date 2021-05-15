@@ -1,0 +1,66 @@
+steps:
+# SETUP ANSIBLE ENV
+- name: '${_BASE_IMG}'
+  args: ['--version']
+  id: ansible version check
+
+# DECRYPT CREDENTIALS
+- id: 'Decrypt SSH Key'
+  name: gcr.io/cloud-builders/gcloud
+  dir: 'config/credentials'
+  args:
+  - kms
+  - decrypt
+  - --ciphertext-file=id_rsa.enc
+  - --plaintext-file=id_rsa
+  - --location=${_LOCATION}
+  - --keyring=${_KEY_RING}
+  - --key=${_SSH_KEY}
+
+- id: 'Decrypt Service Account'
+  name: gcr.io/cloud-builders/gcloud
+  dir: 'config/credentials'
+  args:
+  - kms
+  - decrypt
+  - --ciphertext-file=service_account.enc
+  - --plaintext-file=service_account.json
+  - --location=${_LOCATION}
+  - --keyring=${_KEY_RING}
+  - --key=${_SA_KEY}
+
+- name: '${_BASE_IMG}'
+  entrypoint: '/usr/bin/ansible-inventory'
+  args: ['--list', '-i', '/opt/ansible/inventory/gcp.yaml']
+  id: List Dynamic Inventory
+
+- name: '${_BASE_IMG}'
+  entrypoint: '/usr/bin/ansible'
+  args: ['all', '-i', '/opt/ansible/inventory/gcp.yaml', '-c', 'local', '-e', 'ansible_python_interpreter=python3', '-m', 'setup', '-a', 'filter=ansible_hostname']
+  id: confirm ansible operates correctly
+
+- name: '${_BASE_IMG}'
+  entrypoint: '/usr/bin/ansible-galaxy'
+  args: ['collection', 'install', 'google.cloud']
+  id: Install Gcloud for Dynamic Hosts
+
+# RUN PLAYBOOKS
+- name: '${_BASE_IMG}'
+  entrypoint: '/usr/bin/ansible-playbook'
+  id: Create Network
+  args: ['-e', 'gcp_project=${_PROJECT_ID}', '-e', 'gcp_cred_kind=${_GCP_CRED_KIND}', '-i', '/opt/ansible/inventory/gcp.yaml', './playbooks/infra.yaml']
+
+images:
+- '${_BASE_IMG}'
+
+substitutions:
+    _PROJECT_ID: greg-playground-310720
+    _LOCATION: northamerica-northeast1
+    _BASE_IMG: gcr.io/greg-playground-310720/ansible
+    _GCP_CRED_KIND: serviceaccount
+    _KEY_RING: ansible-keyring
+    _SSH_KEY: ansible-ssh-key
+    _SA_KEY: ansible-sa-key
+
+timeout: 1200s
+tags: ['ansible-runner']

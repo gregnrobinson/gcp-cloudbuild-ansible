@@ -1,0 +1,5 @@
+gcp_project: "greg-playground-310720"
+gcp_cred_kind: "serviceaccount"
+gcp_region: "northamerica-northeast1"
+gcp_zone: "northamerica-northeast1-a"
+gcp_cred_file: "/workspace/config/credentials/service_account.json"

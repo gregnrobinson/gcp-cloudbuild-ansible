@@ -1,0 +1,8 @@
+---
+- name: Create GCP Infrastructure
+  hosts: localhost
+  gather_facts: no
+  connection: local
+
+  roles:
+    - role: gcp-compute

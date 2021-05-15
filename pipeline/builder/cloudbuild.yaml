@@ -1,0 +1,41 @@
+steps:
+# UPLOAD PUBLIC KEYS
+- name: gcr.io/cloud-builders/gcloud
+  args:
+    - compute
+    - project-info
+    - add-metadata
+    - --metadata-from-file
+    - ssh-keys=./config/credentials/public_keys
+  id: Upload Public Keys
+
+- name: 'gcr.io/cloud-builders/docker'
+  args:
+    - 'build'
+    - '-t'
+    - '${_IMG_DEST}:$SHORT_SHA'
+    - '-f'
+    - './ansible/pipeline/builder/Dockerfile'
+    - '.'
+  id: Build
+
+- name: 'gcr.io/cloud-builders/docker'
+  args:
+    - 'push'
+    - '${_IMG_DEST}:$SHORT_SHA'
+  id: Push
+
+- name: 'gcr.io/cloud-builders/docker'
+  args:
+    - 'tag'
+    - '${_IMG_DEST}:$SHORT_SHA'
+    - '${_IMG_DEST}:latest'
+  waitFor: ["build"]
+  id: Tag
+
+images:
+- '${_IMG_DEST}:latest'
+- '${_IMG_DEST}:$SHORT_SHA'
+
+substitutions:
+    _IMG_DEST: gcr.io/greg-playground-310720/ansible

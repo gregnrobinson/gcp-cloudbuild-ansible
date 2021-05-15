@@ -121,8 +121,7 @@ gcloud kms encrypt \
     --plaintext-file $SSH_KEY_PATH \
     --ciphertext-file $SSH_KEY_PATH.enc
 ```
-## Add Public Key to GCP
-Create a Public SSH Keys File
+## Create a Public SSH Keys File
 
 ***Replace the [PUBLIC_KEY_VALUE] with the contents of $SSH_KEY_PATH.pub***
 

@@ -40,7 +40,7 @@ Run the `./setup.sh` script to replace the project ID in all the neccesary yaml 
 ./setup.sh
 ```
 
-Start by enabling the required API's so we can build and push images using CloudBuild.
+Enable the required API's so we can build and push images using CloudBuild.
 
 ```sh
 gcloud services enable cloudbuild.googleapis.com --project ${PROJECT_ID}

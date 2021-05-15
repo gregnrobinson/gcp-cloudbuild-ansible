@@ -34,6 +34,8 @@ Create an environment variable named PROJECT_ID
 export PROJECT_ID="<YOUR_PROJECT_ID>"
 ```
 
+Install yq from [here](https://mikefarah.gitbook.io/yq/).
+
 Run the `./setup.sh` script to replace the project ID in all the neccesary yaml files.
 
 ```yaml

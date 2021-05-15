@@ -2,7 +2,6 @@
 set -o errexit
 set -o pipefail
 
-export PROJECT_ID="<PROJECT_ID>"
 export IMG_DEST="gcr.io/${PROJECT_ID}/ansible"
 
 echo "Setting up inventory files..."

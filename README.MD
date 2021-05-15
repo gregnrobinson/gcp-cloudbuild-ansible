@@ -123,8 +123,6 @@ gcloud kms encrypt \
 ```
 ## Create a Public SSH Keys File
 
-***Replace the [PUBLIC_KEY_VALUE] with the contents of $SSH_KEY_PATH.pub***
-
 ```sh
 PUBLIC_KEY=$(cat ~/.ssh/ansible_rsa.pub)
 echo "ansible:$PUBLIC_KEY" >> ./config/credentials/public_keys

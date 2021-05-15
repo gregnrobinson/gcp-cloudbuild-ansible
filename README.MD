@@ -127,9 +127,8 @@ Create a Public SSH Keys File
 ***Replace the [PUBLIC_KEY_VALUE] with the contents of $SSH_KEY_PATH.pub***
 
 ```sh
-echo "ansible:ssh-rsa [PUBLIC_KEY_VALUE] ansible" >> public_keys.txt
-
-gcloud compute project-info add-metadata --metadata-from-file ssh-keys=public_keys.txt
+PUBLIC_KEY=$(cat ~/.ssh/ansible_rsa.pub)
+echo "ansible:$PUBLIC_KEY" >> ./config/credentials/public_keys
 ```
 # Building Locally
 

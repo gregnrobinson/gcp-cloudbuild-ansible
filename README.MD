@@ -112,7 +112,6 @@ LOCATION="northamerica-northeast1"
 KEY_RING="ansible-keyring"
 KEY="ansible-ssh-key"
 SSH_KEY="ansible_rsa"
-SSH_KEY_PATH="~/.ssh"
 
 gcloud kms keys create $KEY \
     --keyring $KEY_RING \
@@ -132,7 +131,7 @@ gcloud kms encrypt \
 PUBLIC_KEY=$(cat $SSH_KEY.pub)
 echo "ansible:$PUBLIC_KEY" >> ./config/credentials/public_keys
 
-mv ansible_rsa.enc ./config/credentials
+mv ansible_rsa.enc ./config/credentials 
 rm -rf ansible_rsa.pub ansible_rsa
 ```
 # Building Locally

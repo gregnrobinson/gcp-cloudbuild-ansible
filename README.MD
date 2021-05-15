@@ -40,7 +40,7 @@ Run the `./setup.sh` script to replace the project ID in all the neccesary yaml 
 ./setup.sh
 ```
 
-Start by enabling the required API's so we can build and push images using CloudBuild.
+Enable the required API's so we can build and push images using CloudBuild.
 
 ```sh
 gcloud services enable cloudbuild.googleapis.com --project ${PROJECT_ID}
@@ -127,9 +127,8 @@ Create a Public SSH Keys File
 ***Replace the [PUBLIC_KEY_VALUE] with the contents of $SSH_KEY_PATH.pub***
 
 ```sh
-echo "ansible:ssh-rsa [PUBLIC_KEY_VALUE] ansible" >> public_keys.txt
-
-gcloud compute project-info add-metadata --metadata-from-file ssh-keys=public_keys.txt
+PUBLIC_KEY=$(cat ~/.ssh/ansible_rsa.pub)
+echo "ansible:$PUBLIC_KEY" >> ./config/credentials/public_keys
 ```
 # Building Locally
 

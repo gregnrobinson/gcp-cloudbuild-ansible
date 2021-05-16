@@ -29,16 +29,6 @@ substitutions:
 
 # Setup
 
-Install the following packages:
-- An exisitng GCP environment with the ability to create or an existing project.
-- [yq](https://mikefarah.gitbook.io/yq/)
-- [Docker](https://docs.docker.com/engine/install/)
-
-Run the following command to setup the Ansble runner on a new or existing Project.
-
-```yaml
-./setup.sh
-```
 ## First time Setup
 
 Ensure the user/service account executing the pipeline has the required permissions. Storage Admin is for pushing and pulling images from GCR, as well as creating an image if it doesn't already exist.
@@ -62,6 +52,17 @@ gcloud projects add-iam-policy-binding $PROJECT_ID \
 gcloud projects add-iam-policy-binding $PROJECT_ID \
     --member ${TYPE}:${SA_ACCOUNT_ID}@${PROJECT_ID}.iam.gserviceaccount.com \
     --role roles/cloudkms.cryptoKeyEncrypterDecrypter
+```
+
+Install the following packages:
+
+- [yq](https://mikefarah.gitbook.io/yq/)
+- [Docker](https://docs.docker.com/engine/install/)
+
+Run the following command to setup the Ansble runner on a new or existing Project. An exisitng GCP environment with the ability to create or use an existing project is required.
+
+```yaml
+./setup.sh
 ```
 
 # Operations

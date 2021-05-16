@@ -1,7 +1,6 @@
 #!/bin/bash
 set -o errexit
 set -o pipefail
-set -x
 
 yaml_substitutions(){
     export PROJECT_ID=$PROJECT_ID
@@ -163,14 +162,42 @@ read PROJECT_ID_INPUT
 
 EXISTS=$(gcloud projects list --filter="lifecycleState:${PROJECT_ID_INPUT}" 2>&1)
 
+#if [[ $EXISTS == *"0"* ]]; then
+#    echo "This project does not appear to exist, would you like to create it (y/n) :"
+#    read yesno
+#    if [[ $yesno == "y" ]]; then
+#      export PROJECT_ID="$PROJECT_ID_INPUT"
+#      NEW_PROJECT="true"
+#      setup
+#    fi
+#else
+#  NEW_PROJECT="false"
+#  setup
+#fi
 if [[ $EXISTS == *"0"* ]]; then
-    echo "This project does not appear to exist, would you like to create it (y/n) :"
-    read yesno
-    if [[ $yesno == "y" ]]; then
-      export PROJECT_ID="$PROJECT_ID_INPUT"
-      NEW_PROJECT="true"
-      setup
-    fi
+    export NEW_PROJECT="true"
+    export PROJECT_ID="$PROJECT_ID_INPUT"
+    numchoice=1
+
+    while [ $numchoice != 0 ]; do
+     
+     cat ./config/logo.txt
+     echo -n "
+     1. First time setup
+     2. Build Ansible
+     3. Run Ansible
+     0. Exit
+
+     enter choice [ 1 | 2 | 3 | 0 ]: "
+     read numchoice
+     case $numchoice in
+            "1" ) setup ;;
+            "2" ) build_ansible ;;
+            "3" ) run_ansible ;;
+            "0" ) break ;;
+            * ) echo -n "You entered an incorrect option. Please try again." ;;
+     esac
+    done
 else
   NEW_PROJECT="false"
   setup

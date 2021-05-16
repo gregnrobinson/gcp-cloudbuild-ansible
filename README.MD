@@ -83,13 +83,5 @@ bash setup.sh build_ansible
 Within the root of the directory run the following to build the image.
 
 ```sh
-gcloud components install cloud-build-local
-
-cloud-build-local --config=./pipeline/runner/cloudbuild.yaml --dryrun=false .
-```
-
-For debugging, the following flag can be applied to `cloud-build-local`
-
-```sh
---write-workspace=./pipeline
+bash setup.sh run_ansible
 ```

@@ -21,7 +21,7 @@ yaml_substitutions(){
 
 build_ansible(){
     SHORT_SHA=$(git rev-parse --short HEAD)
-    
+
     gcloud components install cloud-build-local || echo "cloud-build-local already installed"
     cloud-build-local --config=./pipeline/builder/cloudbuild-local.yaml --substitutions _SHORT_SHA=$SHORT_SHA --dryrun=false --push .
 }
@@ -99,6 +99,27 @@ create_ssh_key(){
     rm -rf ansible_rsa.pub ansible_rsa
 }
 
+yaml_substitutions(){
+    export IMG_DEST="gcr.io/${PROJECT_ID}/ansible"
+
+    echo "Setting up inventory files..."
+    yq eval '.projects[0] |= ''"'$PROJECT_ID'"' -i ./ansible/config/inventory/gcp.yaml
+    yq eval '.gcp_project |= ''"'$PROJECT_ID'"' -i ./ansible/config/inventory/group_vars/all.yaml
+
+    echo "Setting up builder pipeline files..."
+    yq eval '.substitutions._IMG_DEST |= ''"'$IMG_DEST'"' -i ./ansible/pipeline/builder/cloudbuild-local.yaml
+    yq eval '.substitutions._IMG_DEST |= ''"'$IMG_DEST'"' -i ./ansible/pipeline/builder/cloudbuild.yaml
+
+    echo "Setting up runner pipeline files..."
+    yq eval '.substitutions._PROJECT_ID |= ''"'$PROJECT_ID'"' -i ./ansible/pipeline/runner/cloudbuild.yaml
+    yq eval '.substitutions._BASE_IMG |= ''"'$IMG_DEST'"' -i ./ansible/pipeline/runner/cloudbuild.yaml
+}
+
+"$@"
+
+title="Ansible Runner 0.1"
+#prompt="Would you like to setup Ansible Runner in a new or existing project?"
+#options=("1 - New Project" "2 - Existing Project")
 setup(){
   export PARENT_ID=$(gcloud config list --format 'value(core.project)' 2>/dev/null)
   export PARENT_TYPE=$(gcloud projects describe ${PARENT_ID} --format="value(parent.type)")
@@ -142,28 +163,17 @@ main_menu(){
 printf 'Enter a Project ID (ctrl^c to exit): '
 read -r PROJECT_ID_INPUT
 
-EXISTS=$(gcloud projects list --filter="lifecycleState:${PROJECT_ID_INPUT}" 2>&1)
+EXISTS=$(gcloud projects list --filter="${PROJECT_ID_INPUT}" 2>&1)
 
-#if [[ $EXISTS == *"0"* ]]; then
-#    echo "This project does not appear to exist, would you like to create it (y/n) :"
-#    read yesno
-#    if [[ $yesno == "y" ]]; then
-#      export PROJECT_ID="$PROJECT_ID_INPUT"
-#      NEW_PROJECT="true"
-#      setup
-#    fi
-#else
-#  NEW_PROJECT="false"
-#  setup
-#fi
-if [[ $EXISTS == *"0"* ]]; then
+if [[ $EXISTS == *"Listed 0 items"* ]]; then
     export NEW_PROJECT="true"
     export PROJECT_ID="$PROJECT_ID_INPUT"
     numchoice=1
 
-    while [ $numchoice != 0 ]; do
+    echo "INFO: The project ID entered does not exist, it will be created."
+
+    while [[ $numchoice != 0 ]]; do
      
-     cat ./config/logo.txt
      echo -n "
      1. First time setup
      2. Build Ansible
@@ -181,9 +191,29 @@ if [[ $EXISTS == *"0"* ]]; then
      esac
     done
 else
-  NEW_PROJECT="false"
-  setup
+    export NEW_PROJECT="false"
+    export PROJECT_ID="$PROJECT_ID_INPUT"
+
+    echo "INFO: Found existing project. Selecting..."
+
+    while [[ $numchoice != 0 ]]; do
+     
+     echo -n "
+     1. First time setup
+     2. Build Ansible
+     3. Run Ansible
+     0. Exit
+
+     enter choice [ 1 | 2 | 3 | 0 ]: "
+     read numchoice
+     case $numchoice in
+            "1" ) setup ;;
+            "2" ) build_ansible ;;
+            "3" ) run_ansible ;;
+            "0" ) break ;;
+            * ) echo -n "You entered an incorrect option. Please try again." ;;
+     esac
+    done
 fi
 }
-
 main_menu

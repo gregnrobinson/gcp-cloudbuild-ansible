@@ -20,6 +20,6 @@ RUN mkdir /etc/ansible && \
     cp -r ./inventory/. ./ansible/inventory && \
     cp -r ./roles/. ./ansible/roles && \
     ls -al ./ansible/inventory && \
-    chmod -R 755 ansible/ 
+    chmod -R 755 ansible/
 
 ENTRYPOINT ["/usr/bin/ansible-playbook"]

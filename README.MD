@@ -38,7 +38,7 @@ Install the following packages:
 - [yq](https://mikefarah.gitbook.io/yq/)
 - [Docker](https://docs.docker.com/engine/install/)
 
-Run the `./setup.sh` script to to setup Ansble on a new or existing Project.
+Run the following command to setup the Ansble runner on a new or existing Project.
 
 ```yaml
 ./setup.sh

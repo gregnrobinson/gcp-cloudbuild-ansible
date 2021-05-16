@@ -20,32 +20,16 @@ yaml_substitutions(){
 }
 
 build_ansible(){
-    echo read "Environment ready... Would you like to build the Ansible Docker image now? (y/n): " yesno
-    read yesno
-
-    if [[ $yesno == "y" ]]; then
-        SHORT_SHA=$(git rev-parse --short HEAD)
-
-        gcloud components install cloud-build-local || echo "cloud-build-local already installed"
-
-        cloud-build-local --config=./pipeline/builder/cloudbuild-local.yaml --substitutions _SHORT_SHA=$SHORT_SHA --dryrun=false --push .
-    else exit 0
-    fi
+    SHORT_SHA=$(git rev-parse --short HEAD)
+    
+    gcloud components install cloud-build-local || echo "cloud-build-local already installed"
+    cloud-build-local --config=./pipeline/builder/cloudbuild-local.yaml --substitutions _SHORT_SHA=$SHORT_SHA --dryrun=false --push .
 }
 
 run_ansible(){
-    echo read "Would you like to execute ansible playbooks? (y/n): " yesno
-    read yesno
-
-    if [[ $yesno == "y" ]]; then
-        gcloud components install cloud-build-local || echo "cloud-build-local already installed"
-
-        cloud-build-local --config=./pipeline/runner/cloudbuild.yaml --dryrun=false .
-    else exit 0
-    fi
+    gcloud components install cloud-build-local || echo "cloud-build-local already installed"
+    cloud-build-local --config=./pipeline/runner/cloudbuild.yaml --dryrun=false .
 }
-
-"$@"
 
 create_kms_keyring(){
     LOCATION="northamerica-northeast1"
@@ -115,8 +99,6 @@ create_ssh_key(){
     rm -rf ansible_rsa.pub ansible_rsa
 }
 
-title="Ansible Runner 0.1"
-
 setup(){
   export PARENT_ID=$(gcloud config list --format 'value(core.project)' 2>/dev/null)
   export PARENT_TYPE=$(gcloud projects describe ${PARENT_ID} --format="value(parent.type)")
@@ -157,8 +139,8 @@ setup(){
 "$@"
 
 main_menu(){
-echo "Enter a Project ID (ctrl^c to exit): "
-read PROJECT_ID_INPUT
+printf 'Enter a Project ID (ctrl^c to exit): '
+read -r PROJECT_ID_INPUT
 
 EXISTS=$(gcloud projects list --filter="lifecycleState:${PROJECT_ID_INPUT}" 2>&1)
 

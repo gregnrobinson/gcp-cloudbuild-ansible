@@ -46,12 +46,6 @@ Run the `./setup.sh` script to to setup Ansble on a new or existing Project.
 
 # Building Locally
 
-Install the `cloud-build-local` package with the following command.
-
-```sh
-bash setup.sh build_ansible
-```
-
 Ensure the user/service account executing the pipeline has the required permissions. Storage Admin is for pushing and pulling images from GCR, as well as creating an image if it doesn't already exist.
 
   - Cloud Build Service Account `not applicable to cloud-build-local`
@@ -75,7 +69,12 @@ gcloud projects add-iam-policy-binding $PROJECT_ID \
     --role roles/cloudkms.cryptoKeyEncrypterDecrypter
 ```
 
-## Build the Ansible Builder Docker image.
+Within the root of the directory run the following to build the Ansible container image.
+```sh
+bash setup.sh build_ansible
+```
+
+# Running Locally
 
 Within the root of the directory run the following to build the image.
 

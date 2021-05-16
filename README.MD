@@ -66,9 +66,17 @@ Run the following command to setup the Ansble runner on a new or existing Projec
 A menu appear with a set of options, `1` is for First time setup.
 
 ```
-Enter a Project ID (ctrl^c to exit): testing
+Enter a Project ID (ctrl^c to exit): new-project-id
+   _             _ _     _          ___       _ _     _           
+  /_\  _ __  ___(_) |__ | | ___    / __\_   _(_) | __| | ___ _ __ 
+ //_\\| '_ \/ __| | '_ \| |/ _ \  /__\// | | | | |/ _` |/ _ \ '__|
+/  _  \ | | \__ \ | |_) | |  __/ / \/  \ |_| | | | (_| |  __/ |   
+\_/ \_/_| |_|___/_|_.__/|_|\___| \_____/\__,_|_|_|\__,_|\___|_|   
+                                                                  
+Version: 0.01
+INFO: The project ID entered does not exist, it will be created.
 
-     1. First time setup
+     1. Setup
      2. Build Ansible
      3. Run Ansible
      0. Exit

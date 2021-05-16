@@ -71,18 +71,12 @@ gcloud projects add-iam-policy-binding $PROJECT_ID \
 
 Within the root of the directory run the following to build the Ansible container image.
 ```sh
+SHORT_SHA=$(git rev-parse --short HEAD)
+
 bash setup.sh build_ansible
 ```
 
 # Running Locally
-
-Within the root of the directory run the following command to execute playbooks.
-
-```sh
-SHORT_SHA=$(git rev-parse --short HEAD)
-
-cloud-build-local --config=./pipeline/builder/cloudbuild-local.yaml --substitutions _SHORT_SHA=$SHORT_SHA --dryrun=false --push .
-```
 
 ## Run Ansible with the Ansible Builder Docker image.
 

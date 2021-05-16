@@ -76,7 +76,7 @@ bash setup.sh build_ansible
 
 # Running Locally
 
-Within the root of the directory run the following to build the image.
+Within the root of the directory run the following command to execute playbooks.
 
 ```sh
 SHORT_SHA=$(git rev-parse --short HEAD)

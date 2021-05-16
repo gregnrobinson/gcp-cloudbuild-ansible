@@ -57,10 +57,23 @@ Install the following packages:
 - [yq](https://mikefarah.gitbook.io/yq/)
 - [Docker](https://docs.docker.com/engine/install/)
 
-Run the following command to setup the Ansble runner on a new or existing Project. An exisitng GCP environment with the ability to create or use an existing project is required.
+Run the following command to setup the Ansble runner on a new or existing Project.
 
 ```yaml
 ./setup.sh
+```
+
+A menu appear with a set of options, `1` is for First time setup.
+
+```
+Enter a Project ID (ctrl^c to exit): testing
+
+     1. First time setup
+     2. Build Ansible
+     3. Run Ansible
+     0. Exit
+
+     enter choice [ 1 | 2 | 3 | 0 ]: 0
 ```
 
 # Operations
@@ -71,8 +84,7 @@ Within the root of the directory run the following to build the Ansible containe
 export PROJECT_ID="<PROJECT_ID>"
 export SHORT_SHA=$(git rev-parse --short HEAD)
 
-bash setup.sh yaml_substitutions
-bash setup.sh build_ansible
+bash setup.sh
 ```
 
 ## Running Ansible

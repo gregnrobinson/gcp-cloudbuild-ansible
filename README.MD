@@ -27,7 +27,7 @@ substitutions:
     _SA_KEY: ansible-sa-key #See Manage Credentials step
 ```
 
-# Prerequisites
+# Setup
 
 Create an environment variable named PROJECT_ID
 ```sh
@@ -44,104 +44,12 @@ Run the `./setup.sh` script to replace the project ID in all the neccesary yaml 
 ./setup.sh
 ```
 
-Enable the required API's so we can build and push images using CloudBuild.
-
-```sh
-gcloud services enable cloudbuild.googleapis.com --project ${PROJECT_ID}
-gcloud services enable containerregistry.googleapis.com --project ${PROJECT_ID}
-gcloud services enable storage.googleapis.com --project ${PROJECT_ID}
-```
-
-## Create KMS for Ansible Control Node
-
-```sh
-PROJECT_NUMBER=$(gcloud projects list --filter="$PROJECT_ID" --format="value(PROJECT_NUMBER)")
-LOCATION="northamerica-northeast1"
-KEY_RING="ansible-keyring"
-
-
-gcloud kms keyrings create $KEY_RING \
-    --location $LOCATION
-
-# Grant access to the key ring from Cloud Build Service Account
-gcloud kms keys add-iam-policy-binding key \
-    --keyring $KEY_RING \
-    --location $LOCATION \
-    --member `${PROJECT_NUMBER}@cloudbuild.gserviceaccount.com` \
-    --role roles/cloudkms.cryptoKeyDecrypter
-```
-
-## Create and Encrypt Service Account with KMS
-
-```sh
-LOCATION="northamerica-northeast1"
-KEY_RING="ansible-keyring"
-KEY="ansible-sa-key"
-SA_ACCOUNT_ID="ansible-automation"
-SA_DESCRIPTION="Used for executing Ansible scripts against"
-SA_KEY_PATH="./config/credentials/service_account.json"
-
-gcloud iam service-accounts create $SA_ACCOUNT_ID \
-    --description=$DESCRIPTION \
-    --display-name=$SA_ACCOUNT_ID
-    
-gcloud iam service-accounts keys create $SA_KEY_PATH \
-    --iam-account=${SA_ACCOUNT_ID}@${PROJECT_ID}.iam.gserviceaccount.com
-
-gcloud projects add-iam-policy-binding $PROJECT_ID \
-    --member serviceAccount:${SA_ACCOUNT_ID}@${PROJECT_ID}.iam.gserviceaccount.com \
-    --role roles/editor
-
-gcloud kms keys create $KEY \
-    --keyring $KEY_RING \
-    --location $LOCATION \
-    --purpose "encryption"
-
-gcloud kms encrypt \
-    --key $KEY  \
-    --keyring $KEY_RING \
-    --location $LOCATION  \
-    --plaintext-file $SA_KEY_PATH \
-    --ciphertext-file $SA_KEY_PATH.enc
-
-rm -rf $SA_KEY_PATH
-```
-
-## Create and Encrypt SSH Private Key with KMS
-
-```sh
-LOCATION="northamerica-northeast1"
-KEY_RING="ansible-keyring"
-KEY="ansible-ssh-key"
-SSH_KEY="ansible_rsa"
-
-gcloud kms keys create $KEY \
-    --keyring $KEY_RING \
-    --location $LOCATION \
-    --purpose "encryption"
-
-ssh-keygen -t rsa -f $SSH_KEY -C ansible
-chmod 400 $SSH_KEY
-
-gcloud kms encrypt \
-    --key ansible-ssh-key \
-    --keyring $KEY_RING \
-    --location $LOCATION  \
-    --plaintext-file $SSH_KEY \
-    --ciphertext-file $SSH_KEY.enc
-
-PUBLIC_KEY=$(cat $SSH_KEY.pub)
-echo "ansible:$PUBLIC_KEY" >> ./config/credentials/public_keys
-
-mv ansible_rsa.enc ./config/credentials 
-rm -rf ansible_rsa.pub ansible_rsa
-```
 # Building Locally
 
 Install the `cloud-build-local` package with the following command.
 
 ```sh
-gcloud components install cloud-build-local
+bash setup.sh build_ansible
 ```
 
 Ensure the user/service account executing the pipeline has the required permissions. Storage Admin is for pushing and pulling images from GCR, as well as creating an image if it doesn't already exist.

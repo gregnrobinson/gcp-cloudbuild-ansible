@@ -170,12 +170,12 @@ if [[ $EXISTS == *"Listed 0 items"* ]]; then
     export PROJECT_ID="$PROJECT_ID_INPUT"
     numchoice=1
 
-    echo "INFO: The project ID entered does not exist, it will be created."
 
     while [[ $numchoice != 0 ]]; do
-     
+     echo "$(cat ./config/logo.txt)"
+     echo "INFO: The project ID entered does not exist, it will be created."
      echo -n "
-     1. First time setup
+     1. Setup
      2. Build Ansible
      3. Run Ansible
      0. Exit
@@ -194,12 +194,12 @@ else
     export NEW_PROJECT="false"
     export PROJECT_ID="$PROJECT_ID_INPUT"
 
-    echo "INFO: Found existing project. Selecting..."
-
     while [[ $numchoice != 0 ]]; do
-     
+
+     echo "$(cat ./config/logo.txt)"
+     echo "INFO: Found existing project. Selecting..."
      echo -n "
-     1. First time setup
+     1. Setup
      2. Build Ansible
      3. Run Ansible
      0. Exit

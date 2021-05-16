@@ -144,7 +144,7 @@ gcloud components install cloud-build-local
 
 Ensure the user/service account executing the pipeline has the required permissions. Storage Admin is for pushing and pulling images from GCR, as well as creating an image if it doesn't already exist.
 
-  - Cloud Build Service Account `Not applicable to cloud-build-local`
+  - Cloud Build Service Account `not applicable to cloud-build-local`
   - Storage Admin
   - KMS Key Decrypter
 

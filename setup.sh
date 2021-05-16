@@ -199,24 +199,30 @@ LOGGED_IN=$(gcloud auth list 2>&1)
 if [[ $LOGGED_IN != *"*"* ]]; then
     gcloud auth login --no-launch-browser
     export EXISTS=$(gcloud projects list --filter="${PROJECT_ID_INPUT}" 2>&1)
+
+    if [[ $EXISTS == *"Listed 0 items"* ]]; then
+        export NEW_PROJECT="true"
+        export INFO="INFO: The project ID entered does not exist, it will be created."
+    fi
 else
+    export NEW_PROJECT="false"
     export EXISTS=$(gcloud projects list --filter="${PROJECT_ID_INPUT}" 2>&1)
+    export INFO="INFO: The project ID entered does not exist, it will be created."
 fi
 
-if [[ $EXISTS == *"Listed 0 items"* ]]; then
-    export NEW_PROJECT="true"
-    export PROJECT_ID=$PROJECT_ID_INPUT
+export PROJECT_ID=$PROJECT_ID_INPUT
 
-    numchoice=1
-    while [[ $numchoice != 0 ]]; do
+numchoice=1
+while [[ $numchoice != 0 ]]; do
     echo "$(cat ./config/logo.txt)"
     echo "Version: 0.01"
-    echo "INFO: The project ID entered does not exist, it will be created."
+    echo $INFO
     echo -n "
     1. Setup
     2. Build Ansible
     3. Run Ansible
     0. Exit
+
     enter choice [ 1 | 2 | 3 | 0 ]: "
     read numchoice
     case $numchoice in
@@ -226,31 +232,7 @@ if [[ $EXISTS == *"Listed 0 items"* ]]; then
         "0" ) break ;;
         * ) echo -n "You entered an incorrect option. Please try again." ;;
     esac
-    done
-else
-    export NEW_PROJECT="false"
-    export PROJECT_ID=$PROJECT_ID_INPUT
-
-    while [[ $numchoice != 0 ]]; do
-        echo "$(cat ./config/logo.txt)"
-        echo "Version: 0.01"
-        echo "INFO: Found existing project. Selecting..."
-        echo -n "
-        1. Setup
-        2. Build Ansible
-        3. Run Ansible
-        0. Exit
-        enter choice [ 1 | 2 | 3 | 0 ]: "
-        read numchoice
-        case $numchoice in
-            "1" ) setup ;;
-            "2" ) build_ansible ;;
-            "3" ) run_ansible ;;
-            "0" ) break ;;
-            * ) echo -n "You entered an incorrect option. Please try again." ;;
-        esac
-    done
-fi
+done
 }
 
 main_menu

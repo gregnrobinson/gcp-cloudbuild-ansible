@@ -1,9 +1,10 @@
 #!/bin/bash
 set -o errexit
 set -o pipefail
+set -x
 
 yaml_substitutions(){
-    export PROJECT_ID=$PROJECT_ID
+    export PROJECT_ID=$PROJECT_ID_INPUT
     export IMG_DEST="gcr.io/${PROJECT_ID}/ansible"
 
     echo "Setting up inventory files..."
@@ -20,13 +21,27 @@ yaml_substitutions(){
 }
 
 build_ansible(){
+    export PROJECT_ID=$PROJECT_ID_INPUT
     SHORT_SHA=$(git rev-parse --short HEAD)
 
-    gcloud components install cloud-build-local || echo "cloud-build-local already installed"
-    cloud-build-local --config=./pipeline/builder/cloudbuild-local.yaml --substitutions _SHORT_SHA=$SHORT_SHA --dryrun=false --push .
+    if [[ -e "./config/credentials/*.enc" ]] && [[ -e "./config/credentials/*.json.enc" ]]; then
+        echo "Encrypted credetials found..."
+        echo "Building Ansible Container..."
+        gcloud components install cloud-build-local || echo "cloud-build-local already installed"
+        cloud-build-local --config=./pipeline/builder/cloudbuild-local.yaml --substitutions _SHORT_SHA=$SHORT_SHA --dryrun=false --push .
+    else
+        echo "Encrypted credetials not found in ./config/credentials folder... creating..."
+        echo "Creating new encrypted SSH private key..."
+        create_sa_key
+        create_ssh_key
+        echo "Building Ansible Container..."
+        gcloud components install cloud-build-local || echo "cloud-build-local already installed"
+        cloud-build-local --config=./pipeline/builder/cloudbuild-local.yaml --substitutions _SHORT_SHA=$SHORT_SHA --dryrun=false --push .
+    fi
 }
 
 run_ansible(){
+    export PROJECT_ID=$PROJECT_ID_INPUT
     gcloud components install cloud-build-local || echo "cloud-build-local already installed"
     cloud-build-local --config=./pipeline/runner/cloudbuild.yaml --dryrun=false .
 }
@@ -50,53 +65,69 @@ export SSH_KEY="ansible_rsa"
 create_sa_key(){
     KMS_SA_KEY_PATH="./config/credentials/service_account.json"
 
+    EXISTS=$(gcloud iam service-accounts list --filter=$KMS_ACCOUNT_ID 2>&1)
+
+    if [[ $EXISTS == *"Listed 0 items"* ]]; then
+    echo "No service account found... creating..."
+
     gcloud iam service-accounts create $KMS_ACCOUNT_ID \
-        --description="$KMS_DESCRIPTION" \
-        --display-name=$KMS_ACCOUNT_ID
+            --description="$KMS_DESCRIPTION" \
+            --display-name=$KMS_ACCOUNT_ID
 
-    gcloud iam service-accounts keys create $KMS_SA_KEY_PATH \
-        --iam-account=${KMS_ACCOUNT_ID}@${PROJECT_ID}.iam.gserviceaccount.com
+        if [[ -f "./config/credentials/*.json.enc" ]]; then
+        echo "No encrypted service account file found... creating..."
+        
+        gcloud iam service-accounts keys create $KMS_SA_KEY_PATH \
+            --iam-account=${KMS_ACCOUNT_ID}@${PROJECT_ID}.iam.gserviceaccount.com
 
-    gcloud projects add-iam-policy-binding $PROJECT_ID \
-        --member serviceAccount:${KMS_ACCOUNT_ID}@${PROJECT_ID}.iam.gserviceaccount.com \
-        --role roles/editor
+        gcloud projects add-iam-policy-binding $PROJECT_ID \
+            --member serviceAccount:${KMS_ACCOUNT_ID}@${PROJECT_ID}.iam.gserviceaccount.com \
+            --role roles/editor
 
-    gcloud kms keys create $KMS_SA_KEY \
-        --keyring $KMS_KEY_RING \
-        --location $LOCATION \
-        --purpose "encryption"
+        gcloud kms keys create $KMS_SA_KEY \
+            --keyring $KMS_KEY_RING \
+            --location $LOCATION \
+            --purpose "encryption"
 
-    gcloud kms encrypt \
-        --key $KMS_SA_KEY  \
-        --keyring $KMS_KEY_RING \
-        --location $LOCATION \
-        --plaintext-file $KMS_SA_KEY_PATH \
-        --ciphertext-file $KMS_SA_KEY_PATH.enc
+        gcloud kms encrypt \
+            --key $KMS_SA_KEY  \
+            --keyring $KMS_KEY_RING \
+            --location $LOCATION \
+            --plaintext-file $KMS_SA_KEY_PATH \
+            --ciphertext-file $KMS_SA_KEY_PATH.enc
 
-    rm -rf $KMS_SA_KEY_PATH
+        rm -rf $KMS_SA_KEY_PATH
+        fi
+    else
+        echo "Found existing service account and encrypted files"
+    fi
 }
 
 create_ssh_key(){
-    gcloud kms keys create $KMS_SSH_KEY \
-        --keyring $KMS_KEY_RING \
-        --location $LOCATION \
-        --purpose "encryption"
+    if [[ -e "./config/credentials/*.enc" ]]; then
+        gcloud kms keys create $KMS_SSH_KEY \
+            --keyring $KMS_KEY_RING \
+            --location $LOCATION \
+            --purpose "encryption"
 
-    ssh-keygen -t rsa -f $SSH_KEY -C ansible
-    chmod 400 $SSH_KEY
+        ssh-keygen -t rsa -f $SSH_KEY -C ansible
+        chmod 400 $SSH_KEY
 
-    gcloud kms encrypt \
-        --key $KMS_SSH_KEY \
-        --keyring $KMS_KEY_RING \
-        --location $LOCATION  \
-        --plaintext-file $SSH_KEY \
-        --ciphertext-file $SSH_KEY.enc
+        gcloud kms encrypt \
+            --key $KMS_SSH_KEY \
+            --keyring $KMS_KEY_RING \
+            --location $LOCATION  \
+            --plaintext-file $SSH_KEY \
+            --ciphertext-file $SSH_KEY.enc
 
-    PUBLIC_KEY=$(cat $SSH_KEY.pub)
-    echo "ansible:$PUBLIC_KEY" >> ./config/credentials/public_keys
+        PUBLIC_KEY=$(cat $SSH_KEY.pub)
+        echo "ansible:$PUBLIC_KEY" >> ./config/credentials/public_keys
 
-    mv ansible_rsa.enc ./config/credentials 
-    rm -rf ansible_rsa.pub ansible_rsa
+        mv ansible_rsa.enc ./config/credentials 
+        rm -rf ansible_rsa.pub ansible_rsa
+    else
+        echo "Found existing SSH key..."
+    fi
 }
 
 yaml_substitutions(){
@@ -163,59 +194,63 @@ main_menu(){
 printf 'Enter a Project ID (ctrl^c to exit): '
 read -r PROJECT_ID_INPUT
 
-EXISTS=$(gcloud projects list --filter="${PROJECT_ID_INPUT}" 2>&1)
+LOGGED_IN=$(gcloud auth list 2>&1)
+
+if [[ $LOGGED_IN != *"*"* ]]; then
+    gcloud auth login --no-launch-browser
+    export EXISTS=$(gcloud projects list --filter="${PROJECT_ID_INPUT}" 2>&1)
+else
+    export EXISTS=$(gcloud projects list --filter="${PROJECT_ID_INPUT}" 2>&1)
+fi
 
 if [[ $EXISTS == *"Listed 0 items"* ]]; then
     export NEW_PROJECT="true"
-    export PROJECT_ID="$PROJECT_ID_INPUT"
+    export PROJECT_ID=$PROJECT_ID_INPUT
+
     numchoice=1
-
-
     while [[ $numchoice != 0 ]]; do
-     echo "$(cat ./config/logo.txt)"
-     echo "Version: 0.01"
-     echo "INFO: The project ID entered does not exist, it will be created."
-     echo -n "
-     1. Setup
-     2. Build Ansible
-     3. Run Ansible
-     0. Exit
-
-     enter choice [ 1 | 2 | 3 | 0 ]: "
-     read numchoice
-     case $numchoice in
-            "1" ) setup ;;
-            "2" ) build_ansible ;;
-            "3" ) run_ansible ;;
-            "0" ) break ;;
-            * ) echo -n "You entered an incorrect option. Please try again." ;;
-     esac
+    echo "$(cat ./config/logo.txt)"
+    echo "Version: 0.01"
+    echo "INFO: The project ID entered does not exist, it will be created."
+    echo -n "
+    1. Setup
+    2. Build Ansible
+    3. Run Ansible
+    0. Exit
+    enter choice [ 1 | 2 | 3 | 0 ]: "
+    read numchoice
+    case $numchoice in
+        "1" ) setup ;;
+        "2" ) build_ansible ;;
+        "3" ) run_ansible ;;
+        "0" ) break ;;
+        * ) echo -n "You entered an incorrect option. Please try again." ;;
+    esac
     done
 else
     export NEW_PROJECT="false"
-    export PROJECT_ID="$PROJECT_ID_INPUT"
+    export PROJECT_ID=$PROJECT_ID_INPUT
 
     while [[ $numchoice != 0 ]]; do
-
-     echo "$(cat ./config/logo.txt)"
-     echo "Version: 0.01"
-     echo "INFO: Found existing project. Selecting..."
-     echo -n "
-     1. Setup
-     2. Build Ansible
-     3. Run Ansible
-     0. Exit
-
-     enter choice [ 1 | 2 | 3 | 0 ]: "
-     read numchoice
-     case $numchoice in
+        echo "$(cat ./config/logo.txt)"
+        echo "Version: 0.01"
+        echo "INFO: Found existing project. Selecting..."
+        echo -n "
+        1. Setup
+        2. Build Ansible
+        3. Run Ansible
+        0. Exit
+        enter choice [ 1 | 2 | 3 | 0 ]: "
+        read numchoice
+        case $numchoice in
             "1" ) setup ;;
             "2" ) build_ansible ;;
             "3" ) run_ansible ;;
             "0" ) break ;;
             * ) echo -n "You entered an incorrect option. Please try again." ;;
-     esac
+        esac
     done
 fi
 }
+
 main_menu

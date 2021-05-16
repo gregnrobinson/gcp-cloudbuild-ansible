@@ -34,7 +34,9 @@ Create an environment variable named PROJECT_ID
 export PROJECT_ID="<YOUR_PROJECT_ID>"
 ```
 
-Install yq from [here](https://mikefarah.gitbook.io/yq/).
+Install the following packages:
+- [yq](https://mikefarah.gitbook.io/yq/)
+- [Docker](https://docs.docker.com/engine/install/)
 
 Run the `./setup.sh` script to replace the project ID in all the neccesary yaml files.
 

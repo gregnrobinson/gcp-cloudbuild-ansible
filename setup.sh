@@ -3,6 +3,23 @@ set -o errexit
 set -o pipefail
 set -x
 
+yaml_substitutions(){
+    export PROJECT_ID=$PROJECT_ID
+    export IMG_DEST="gcr.io/${PROJECT_ID}/ansible"
+
+    echo "Setting up inventory files..."
+    yq eval '.projects[0] |= ''"'$PROJECT_ID'"' -i ./config/inventory/gcp.yaml
+    yq eval '.gcp_project |= ''"'$PROJECT_ID'"' -i ./config/inventory/group_vars/all.yaml
+
+    echo "Setting up builder pipeline files..."
+    yq eval '.substitutions._IMG_DEST |= ''"'$IMG_DEST'"' -i ./pipeline/builder/cloudbuild-local.yaml
+    yq eval '.substitutions._IMG_DEST |= ''"'$IMG_DEST'"' -i ./pipeline/builder/cloudbuild.yaml
+
+    echo "Setting up runner pipeline files..."
+    yq eval '.substitutions._PROJECT_ID |= ''"'$PROJECT_ID'"' -i ./pipeline/runner/cloudbuild.yaml
+    yq eval '.substitutions._BASE_IMG |= ''"'$IMG_DEST'"' -i ./pipeline/runner/cloudbuild.yaml
+}
+
 build_ansible(){
     echo read "Environment ready... Would you like to build the Ansible Docker image now? (y/n): " yesno
     read yesno
@@ -100,24 +117,6 @@ create_ssh_key(){
     mv ansible_rsa.enc ./config/credentials 
     rm -rf ansible_rsa.pub ansible_rsa
 }
-
-yaml_substitutions(){
-    export IMG_DEST="gcr.io/${PROJECT_ID}/ansible"
-
-    echo "Setting up inventory files..."
-    yq eval '.projects[0] |= ''"'$PROJECT_ID'"' -i ./config/inventory/gcp.yaml
-    yq eval '.gcp_project |= ''"'$PROJECT_ID'"' -i ./config/inventory/group_vars/all.yaml
-
-    echo "Setting up builder pipeline files..."
-    yq eval '.substitutions._IMG_DEST |= ''"'$IMG_DEST'"' -i ./pipeline/builder/cloudbuild-local.yaml
-    yq eval '.substitutions._IMG_DEST |= ''"'$IMG_DEST'"' -i ./pipeline/builder/cloudbuild.yaml
-
-    echo "Setting up runner pipeline files..."
-    yq eval '.substitutions._PROJECT_ID |= ''"'$PROJECT_ID'"' -i ./pipeline/runner/cloudbuild.yaml
-    yq eval '.substitutions._BASE_IMG |= ''"'$IMG_DEST'"' -i ./pipeline/runner/cloudbuild.yaml
-}
-
-"$@"
 
 title="Ansible Runner 0.1"
 

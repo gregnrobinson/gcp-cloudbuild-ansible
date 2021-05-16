@@ -13,7 +13,7 @@ steps:
       - '-t'
       - '${_IMG_DEST}:$SHORT_SHA'
       - '-f'
-      - './config/pipeline/builder/Dockerfile'
+      - './pipeline/builder/Dockerfile'
       - '.'
     id: Build
   - name: 'gcr.io/cloud-builders/docker'
@@ -32,4 +32,4 @@ images:
   - '${_IMG_DEST}:latest'
   - '${_IMG_DEST}:$SHORT_SHA'
 substitutions:
-  _IMG_DEST: gcr.io/<PROJECT_ID>/ansible
+  _IMG_DEST: gcr.io/greg-playground-310720/ansible

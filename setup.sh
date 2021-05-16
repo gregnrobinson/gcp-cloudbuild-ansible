@@ -173,6 +173,7 @@ if [[ $EXISTS == *"Listed 0 items"* ]]; then
 
     while [[ $numchoice != 0 ]]; do
      echo "$(cat ./config/logo.txt)"
+     echo "Version: 0.01"
      echo "INFO: The project ID entered does not exist, it will be created."
      echo -n "
      1. Setup
@@ -197,6 +198,7 @@ else
     while [[ $numchoice != 0 ]]; do
 
      echo "$(cat ./config/logo.txt)"
+     echo "Version: 0.01"
      echo "INFO: Found existing project. Selecting..."
      echo -n "
      1. Setup

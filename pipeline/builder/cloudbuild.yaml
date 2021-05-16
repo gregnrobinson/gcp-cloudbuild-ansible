@@ -1,5 +1,4 @@
 steps:
-  # UPLOAD PUBLIC KEYS
   - name: gcr.io/cloud-builders/gcloud
     args:
       - compute

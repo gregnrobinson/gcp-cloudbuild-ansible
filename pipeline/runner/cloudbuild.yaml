@@ -1,9 +1,7 @@
 steps:
-  # SETUP ANSIBLE ENV
-  - name: '${_BASE_IMG}'
+  - id: Check Ansible Version
+    name: '${_BASE_IMG}'
     args: ['--version']
-    id: ansible version check
-  # DECRYPT CREDENTIALS
   - id: 'Decrypt SSH Key'
     name: gcr.io/cloud-builders/gcloud
     dir: 'config/credentials'
@@ -26,22 +24,22 @@ steps:
       - --location=${_LOCATION}
       - --keyring=${_KEY_RING}
       - --key=${_SA_KEY}
-  - name: '${_BASE_IMG}'
+  - id: List Dynamic Inventory
+    name: '${_BASE_IMG}'
     entrypoint: '/usr/bin/ansible-inventory'
     args: ['--list', '-i', '/opt/ansible/inventory/gcp.yaml']
-    id: List Dynamic Inventory
-  - name: '${_BASE_IMG}'
+  - id: Sanity Check
+    name: '${_BASE_IMG}'
     entrypoint: '/usr/bin/ansible'
     args: ['all', '-i', '/opt/ansible/inventory/gcp.yaml', '-c', 'local', '-e', 'ansible_python_interpreter=python3', '-m', 'setup', '-a', 'filter=ansible_hostname']
-    id: confirm ansible operates correctly
-  - name: '${_BASE_IMG}'
+  - id: Install GCP Collection
+    name: '${_BASE_IMG}'
     entrypoint: '/usr/bin/ansible-galaxy'
     args: ['collection', 'install', 'google.cloud']
-    id: Install Gcloud for Dynamic Hosts
-  # RUN PLAYBOOKS
-  - name: '${_BASE_IMG}'
+    #EXECUTE PLAYBOOKS
+  - id: Deploy Infra
+    name: '${_BASE_IMG}'
     entrypoint: '/usr/bin/ansible-playbook'
-    id: Deploy Infra
     args: ['-e', 'gcp_project=${_PROJECT_ID}', '-e', 'gcp_cred_kind=${_GCP_CRED_KIND}', '-i', '/opt/ansible/inventory/gcp.yaml', './playbooks/infra.yaml']
 images:
   - '${_BASE_IMG}'

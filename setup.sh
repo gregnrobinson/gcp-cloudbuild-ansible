@@ -34,8 +34,6 @@ build_ansible(){
     fi
 }
 
-"$@"
-
 run_ansible(){
     echo read "Would you like to execute ansible playbooks? (y/n): " yesno
     read yesno
@@ -43,7 +41,7 @@ run_ansible(){
     if [[ $yesno == "y" ]]; then
         gcloud components install cloud-build-local || echo "cloud-build-local already installed"
 
-        cloud-build-local --config=./pipeline/runner/cloudbuild.yaml --dryrun=false --push .
+        cloud-build-local --config=./pipeline/runner/cloudbuild.yaml --dryrun=false .
     else exit 0
     fi
 }

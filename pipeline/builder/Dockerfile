@@ -17,9 +17,9 @@ RUN apk add --update ansible openssh-client py-pip && \
 RUN echo "Copy Ansible Config"
 RUN mkdir /etc/ansible && \
     cp ansible.cfg /etc/ansible && \
-    cp -r ./inventory/. ./config/inventory && \
-    cp -r ./roles/. ./config/roles && \
-    ls -al ./config/inventory && \
+    cp -r ./inventory/. ./ansible/inventory && \
+    cp -r ./roles/. ./ansible/roles && \
+    ls -al ./ansible/inventory && \
     chmod -R 755 ansible/ 
 
 ENTRYPOINT ["/usr/bin/ansible-playbook"]

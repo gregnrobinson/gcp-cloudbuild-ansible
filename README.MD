@@ -29,12 +29,8 @@ substitutions:
 
 # Setup
 
-Create an environment variable named PROJECT_ID
-```sh
-export PROJECT_ID="<YOUR_PROJECT_ID>"
-```
-
 Install the following packages:
+- An exisitng GCP environment with the ability to create or an existing project.
 - [yq](https://mikefarah.gitbook.io/yq/)
 - [Docker](https://docs.docker.com/engine/install/)
 
@@ -43,8 +39,7 @@ Run the following command to setup the Ansble runner on a new or existing Projec
 ```yaml
 ./setup.sh
 ```
-
-# Building Locally
+## First time Setup
 
 Ensure the user/service account executing the pipeline has the required permissions. Storage Admin is for pushing and pulling images from GCR, as well as creating an image if it doesn't already exist.
 
@@ -69,19 +64,24 @@ gcloud projects add-iam-policy-binding $PROJECT_ID \
     --role roles/cloudkms.cryptoKeyEncrypterDecrypter
 ```
 
+# Operations
+## Building Ansible
 Within the root of the directory run the following to build the Ansible container image.
-```sh
-SHORT_SHA=$(git rev-parse --short HEAD)
 
+```sh
+export PROJECT_ID="<PROJECT_ID>"
+export SHORT_SHA=$(git rev-parse --short HEAD)
+
+bash setup.sh yaml_substitutions
 bash setup.sh build_ansible
 ```
 
-# Running Locally
-
-## Run Ansible with the Ansible Builder Docker image.
-
-Within the root of the directory run the following to build the image.
+## Running Ansible
+Within the root of the directory run the following to build the Ansible container image.
 
 ```sh
+export PROJECT_ID="<PROJECT_ID>"
+
+bash setup.sh yaml_substitutions
 bash setup.sh run_ansible
 ```

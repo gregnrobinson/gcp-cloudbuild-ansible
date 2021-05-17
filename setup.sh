@@ -135,9 +135,6 @@ create_ssh_key(){
 
 "$@"
 
-title="Ansible Runner 0.1"
-#prompt="Would you like to setup Ansible Runner in a new or existing project?"
-#options=("1 - New Project" "2 - Existing Project")
 setup(){
   export PARENT_ID=$(gcloud config list --format 'value(core.project)' 2>/dev/null)
   export PARENT_TYPE=$(gcloud projects describe ${PARENT_ID} --format="value(parent.type)")

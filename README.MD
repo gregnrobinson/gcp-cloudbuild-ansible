@@ -70,13 +70,7 @@ A menu appear with a set of options, option `1` is for setting up the project an
 
 ```
 Enter a Project ID (ctrl^c to exit): new-project-id
-   _             _ _     _          ___       _ _     _           
-  /_\  _ __  ___(_) |__ | | ___    / __\_   _(_) | __| | ___ _ __ 
- //_\\| '_ \/ __| | '_ \| |/ _ \  /__\// | | | | |/ _` |/ _ \ '__|
-/  _  \ | | \__ \ | |_) | |  __/ / \/  \ |_| | | | (_| |  __/ |   
-\_/ \_/_| |_|___/_|_.__/|_|\___| \_____/\__,_|_|_|\__,_|\___|_|   
                                                                   
-Version: 0.01
 WARNING: The project ID entered does not exist, it will be created.
 
      1. Setup

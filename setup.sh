@@ -212,7 +212,7 @@ export PROJECT_ID=$PROJECT_ID_INPUT
 logo_ascii="logo$(( ( RANDOM % 10 )  + 1 ))"
 numchoice=1
 while [[ $numchoice != 0 ]]; do
-    echo "${logo}$(cat .gbuild/logos/$logo_ascii)${normal}"
+    echo "${logo}$(cat .gbuild/static/$logo_ascii)${normal}"
     echo "Version: 0.01"
     echo $INFO
     echo -n "

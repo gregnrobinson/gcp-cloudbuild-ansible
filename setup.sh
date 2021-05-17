@@ -193,6 +193,7 @@ main_menu(){
 printf 'Enter a Project ID (ctrl^c to exit): '
 read -r PROJECT_ID_INPUT
 
+logo=$(tput setaf 6)
 warn=$(tput setaf 3)
 bold=$(tput bold)
 normal=$(tput sgr0)
@@ -225,7 +226,7 @@ export PROJECT_ID=$PROJECT_ID_INPUT
 
 numchoice=1
 while [[ $numchoice != 0 ]]; do
-    echo "$(cat ./config/logo.txt)"
+    echo "${logo}$(cat ./config/logo.txt)${normal}"
     echo "Version: 0.01"
     echo $INFO
     echo -n "

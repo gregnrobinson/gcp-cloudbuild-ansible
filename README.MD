@@ -54,6 +54,7 @@ gcloud projects add-iam-policy-binding $PROJECT_ID \
 
 Install the following packages:
 
+- [Google Cloud SDK](https://cloud.google.com/sdk/docs/install)
 - [yq](https://mikefarah.gitbook.io/yq/)
 - [Docker](https://docs.docker.com/engine/install/)
 

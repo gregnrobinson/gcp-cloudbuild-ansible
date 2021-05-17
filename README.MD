@@ -63,7 +63,9 @@ Run the following command to setup the Ansble runner on a new or existing Projec
 ./setup.sh
 ```
 
-A menu appear with a set of options, `1` is for First time setup.
+A menu appear with a set of options, `1` is for setting up the project to run ansible. 
+
+***Note: The setup must be executed before options `2` and `3`. After setup comlpletes, options `2` and `3` can be repeated.***
 
 ```
 Enter a Project ID (ctrl^c to exit): new-project-id
@@ -74,7 +76,7 @@ Enter a Project ID (ctrl^c to exit): new-project-id
 \_/ \_/_| |_|___/_|_.__/|_|\___| \_____/\__,_|_|_|\__,_|\___|_|   
                                                                   
 Version: 0.01
-INFO: The project ID entered does not exist, it will be created.
+WARNING: The project ID entered does not exist, it will be created.
 
      1. Setup
      2. Build Ansible

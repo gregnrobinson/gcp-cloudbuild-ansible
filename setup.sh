@@ -193,13 +193,15 @@ main_menu(){
 printf 'Enter a Project ID (ctrl^c to exit): '
 read -r PROJECT_ID_INPUT
 
+bold=$(tput bold)
+normal=$(tput sgr0)
 LOGGED_IN=$(gcloud auth list 2>&1)
 
 if [[ $LOGGED_IN == *"*"* ]]; then
 export EXISTS=$(gcloud projects list --filter="${PROJECT_ID_INPUT}" 2>&1)
     if [[ $EXISTS == *"Listed 0 items"* ]]; then
         export NEW_PROJECT="true"
-        export INFO="INFO: The project $PROJECT_ID_INPUT does not exist, it will be created..."
+        export INFO=$(echo "${bold}WARNING: The project $PROJECT_ID_INPUT does not exist, it will be created...${normal}")
     else
         export NEW_PROJECT="false"
         export INFO="INFO: Using project $PROJECT_ID_INPUT..."
@@ -210,7 +212,7 @@ else
     export EXISTS=$(gcloud projects list --filter="${PROJECT_ID_INPUT}" 2>&1)
     if [[ $EXISTS == *"Listed 0 items"* ]]; then
         export NEW_PROJECT="true"
-        export INFO="INFO: The project $PROJECT_ID_INPUT does not exist, it will be created..."
+        export INFO=$(echo "${bold}WARNING: The project $PROJECT_ID_INPUT does not exist, it will be created...${normal}")
     else
         export NEW_PROJECT="false"
         export INFO="INFO: Using project $PROJECT_ID_INPUT..."

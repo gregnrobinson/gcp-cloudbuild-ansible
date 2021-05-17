@@ -1,7 +1,6 @@
 #!/bin/bash
 set -o errexit
 set -o pipefail
-set -x
 
 yaml_substitutions(){
     export PROJECT_ID=$PROJECT_ID_INPUT
@@ -196,18 +195,26 @@ read -r PROJECT_ID_INPUT
 
 LOGGED_IN=$(gcloud auth list 2>&1)
 
-if [[ $LOGGED_IN != *"*"* ]]; then
-    gcloud auth login --no-launch-browser
-    export EXISTS=$(gcloud projects list --filter="${PROJECT_ID_INPUT}" 2>&1)
-
+if [[ $LOGGED_IN == *"*"* ]]; then
+export EXISTS=$(gcloud projects list --filter="${PROJECT_ID_INPUT}" 2>&1)
     if [[ $EXISTS == *"Listed 0 items"* ]]; then
         export NEW_PROJECT="true"
-        export INFO="INFO: The project ID entered does not exist, it will be created."
+        export INFO="INFO: The project $PROJECT_ID_INPUT does not exist, it will be created..."
+    else
+        export NEW_PROJECT="false"
+        export INFO="INFO: Using project $PROJECT_ID_INPUT..."
     fi
 else
-    export NEW_PROJECT="false"
+    echo "Not logged in... logging in..."
+    gcloud auth login --no-launch-browser
     export EXISTS=$(gcloud projects list --filter="${PROJECT_ID_INPUT}" 2>&1)
-    export INFO="INFO: The project ID entered does not exist, it will be created."
+    if [[ $EXISTS == *"Listed 0 items"* ]]; then
+        export NEW_PROJECT="true"
+        export INFO="INFO: The project $PROJECT_ID_INPUT does not exist, it will be created..."
+    else
+        export NEW_PROJECT="false"
+        export INFO="INFO: Using project $PROJECT_ID_INPUT..."
+    fi
 fi
 
 export PROJECT_ID=$PROJECT_ID_INPUT

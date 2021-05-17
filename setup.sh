@@ -23,7 +23,7 @@ build_ansible(){
     export PROJECT_ID=$PROJECT_ID_INPUT
     SHORT_SHA=$(git rev-parse --short HEAD)
 
-    if [[ -e "./config/credentials/*.enc" ]] && [[ -e "./config/credentials/*.json.enc" ]]; then
+    if [[ ! -f "./config/credentials/*.enc" ]] && [[ ! -f "./config/credentials/*.json.enc" ]]; then
         echo "Encrypted credetials found..."
         echo "Building Ansible Container..."
         gcloud components install cloud-build-local || echo "cloud-build-local already installed"
@@ -64,38 +64,42 @@ export SSH_KEY="ansible_rsa"
 create_sa_key(){
     KMS_SA_KEY_PATH="./config/credentials/service_account.json"
 
-    EXISTS=$(gcloud iam service-accounts list --filter=$KMS_ACCOUNT_ID 2>&1)
+    SA_EXISTS=$(gcloud iam service-accounts list --filter=$KMS_ACCOUNT_ID 2>&1)
+    KMS_EXISTS=$(gcloud kms keyrings list --location=$LOCATION --filter=$KMS_KEY_RING 2>&1)
 
-    if [[ $EXISTS == *"Listed 0 items"* ]]; then
-    echo "No service account found... creating..."
+    if [[ $SA_EXISTS == *"Listed 0 items"* ]]; then
+        echo "No service account found... creating..."
 
-    gcloud iam service-accounts create $KMS_ACCOUNT_ID \
+        gcloud iam service-accounts create $KMS_ACCOUNT_ID \
             --description="$KMS_DESCRIPTION" \
             --display-name=$KMS_ACCOUNT_ID
 
-        if [[ -f "./config/credentials/*.json.enc" ]]; then
-        echo "No encrypted service account file found... creating..."
-        
-        gcloud iam service-accounts keys create $KMS_SA_KEY_PATH \
-            --iam-account=${KMS_ACCOUNT_ID}@${PROJECT_ID}.iam.gserviceaccount.com
+        if [[ $KMS_EXISTS == *"Listed 0 items"* ]]; then
+            echo "No service account found... creating..."
 
-        gcloud projects add-iam-policy-binding $PROJECT_ID \
-            --member serviceAccount:${KMS_ACCOUNT_ID}@${PROJECT_ID}.iam.gserviceaccount.com \
-            --role roles/editor
+            create_kms_keyring
 
-        gcloud kms keys create $KMS_SA_KEY \
-            --keyring $KMS_KEY_RING \
-            --location $LOCATION \
-            --purpose "encryption"
+        elif [[ ! -f "./config/credentials/*.json.enc" ]]; then
+            gcloud iam service-accounts keys create $KMS_SA_KEY_PATH \
+                --iam-account=${KMS_ACCOUNT_ID}@${PROJECT_ID}.iam.gserviceaccount.com
 
-        gcloud kms encrypt \
-            --key $KMS_SA_KEY  \
-            --keyring $KMS_KEY_RING \
-            --location $LOCATION \
-            --plaintext-file $KMS_SA_KEY_PATH \
-            --ciphertext-file $KMS_SA_KEY_PATH.enc
+            gcloud projects add-iam-policy-binding $PROJECT_ID \
+                --member serviceAccount:${KMS_ACCOUNT_ID}@${PROJECT_ID}.iam.gserviceaccount.com \
+                --role roles/editor
 
-        rm -rf $KMS_SA_KEY_PATH
+            gcloud kms keys create $KMS_SA_KEY \
+                --keyring $KMS_KEY_RING \
+                --location $LOCATION \
+                --purpose "encryption" || echo "Keys already exist"
+
+            gcloud kms encrypt \
+                --key $KMS_SA_KEY  \
+                --keyring $KMS_KEY_RING \
+                --location $LOCATION \
+                --plaintext-file $KMS_SA_KEY_PATH \
+                --ciphertext-file $KMS_SA_KEY_PATH.enc
+
+            rm -rf $KMS_SA_KEY_PATH
         fi
     else
         echo "Found existing service account and encrypted files"
@@ -103,11 +107,11 @@ create_sa_key(){
 }
 
 create_ssh_key(){
-    if [[ -e "./config/credentials/*.enc" ]]; then
+    if [[ ! -f "./config/credentials/*.enc" ]]; then
         gcloud kms keys create $KMS_SSH_KEY \
             --keyring $KMS_KEY_RING \
             --location $LOCATION \
-            --purpose "encryption"
+            --purpose "encryption" || echo "Keys already exist"
 
         ssh-keygen -t rsa -f $SSH_KEY -C ansible
         chmod 400 $SSH_KEY
@@ -127,22 +131,6 @@ create_ssh_key(){
     else
         echo "Found existing SSH key..."
     fi
-}
-
-yaml_substitutions(){
-    export IMG_DEST="gcr.io/${PROJECT_ID}/ansible"
-
-    echo "Setting up inventory files..."
-    yq eval '.projects[0] |= ''"'$PROJECT_ID'"' -i ./ansible/config/inventory/gcp.yaml
-    yq eval '.gcp_project |= ''"'$PROJECT_ID'"' -i ./ansible/config/inventory/group_vars/all.yaml
-
-    echo "Setting up builder pipeline files..."
-    yq eval '.substitutions._IMG_DEST |= ''"'$IMG_DEST'"' -i ./ansible/pipeline/builder/cloudbuild-local.yaml
-    yq eval '.substitutions._IMG_DEST |= ''"'$IMG_DEST'"' -i ./ansible/pipeline/builder/cloudbuild.yaml
-
-    echo "Setting up runner pipeline files..."
-    yq eval '.substitutions._PROJECT_ID |= ''"'$PROJECT_ID'"' -i ./ansible/pipeline/runner/cloudbuild.yaml
-    yq eval '.substitutions._BASE_IMG |= ''"'$IMG_DEST'"' -i ./ansible/pipeline/runner/cloudbuild.yaml
 }
 
 "$@"

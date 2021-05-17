@@ -1,5 +1,5 @@
 plugin: gcp_compute
 projects:
-  - greg-test-final
+  - greg-test-21
 auth_kind: serviceaccount
 service_account_file: /workspace/config/credentials/service_account.json

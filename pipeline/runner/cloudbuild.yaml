@@ -44,8 +44,8 @@ steps:
 images:
   - '${_BASE_IMG}'
 substitutions:
-  _PROJECT_ID: greg-test-final
-  _BASE_IMG: "gcr.io/greg-test-final/ansible"
+  _PROJECT_ID: greg-test-21
+  _BASE_IMG: "gcr.io/greg-test-21/ansible"
   _LOCATION: northamerica-northeast1
   _GCP_CRED_KIND: serviceaccount
   _KEY_RING: ansible-keyring

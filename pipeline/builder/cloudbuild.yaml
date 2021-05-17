@@ -32,4 +32,4 @@ images:
   - '${_IMG_DEST}:latest'
   - '${_IMG_DEST}:$SHORT_SHA'
 substitutions:
-  _IMG_DEST: gcr.io/greg-test-final/ansible
+  _IMG_DEST: gcr.io/greg-test-21/ansible
